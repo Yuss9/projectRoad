@@ -11,8 +11,11 @@ import math
 
 
 class TrajetService(ServiceBase):
-    @rpc(Decimal, Decimal, Decimal,Decimal, _returns=Decimal)
+    origin = '*'
+
+    @rpc(Decimal, Decimal, Decimal, Decimal, _returns=Decimal)
     def calculer_temps_trajet(ctx, distance_km, vitesse_km_h, autonomie_km, temps_recharge_h):
+        ctx.transport.resp_headers['Access-Control-Allow-Origin'] = ctx.descriptor.service_class.origin
         temps_trajet = distance_km / vitesse_km_h  # Temps de trajet sans recharge
         # Nombre de recharges nécessaires
         nb_recharges = int(math.ceil(distance_km / autonomie_km)) - 1
