@@ -23,6 +23,7 @@ export class CaculSoapService {
         </spy:calculer_temps_trajet>
     </soapenv:Body>
 </soapenv:Envelope>`;
+
     return this.http.post(url, soapData, options);
   }
 }

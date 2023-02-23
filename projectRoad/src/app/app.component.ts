@@ -15,8 +15,11 @@ export class AppComponent implements OnInit {
   ngOnInit() {
     this.caculSoapService.getPageDataFromSoap().subscribe((data) => {
       console.log(data);
+      let res = data.split('calculer_temps_trajetResult');
+      res = res[1];
+      res = res.replace('>', '');
+      res = res.replace('</tns:', '');
+      console.log(res);
     });
   }
 }
-
-
