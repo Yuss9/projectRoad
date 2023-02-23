@@ -6,7 +6,7 @@ import { tap, map } from 'rxjs/operators';
 @Injectable({
   providedIn: 'root',
 })
-export class CaculSoapService {
+export class CalculSoapService {
   constructor(private http: HttpClient) {}
 
   getPageDataFromSoap(): Observable<any> {
