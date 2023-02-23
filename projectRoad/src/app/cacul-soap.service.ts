@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { tap, map } from 'rxjs/operators';
 
 @Injectable({
   providedIn: 'root',
@@ -24,9 +25,21 @@ export class CaculSoapService {
     </soapenv:Body>
 </soapenv:Envelope>`;
 
-    return this.http.post(url, soapData, options).pipe((data) => {
-      console.log(data);
-      
-    });
+    // return this.http.post(url, soapData, options).pipe((data) => {
+    //   console.log(data);
+
+    // });
+
+    return this.http.post<any>(url, soapData, options).pipe(
+      tap((value) => console.log(value)),
+
+      map((value: string) => {
+        const data = value.split('calculer_temps_trajetResult');
+        let res = data[1];
+        res = res.replace('>', '');
+        res = res.replace('</tns:', '');
+        return res;
+      })
+    );
   }
 }
