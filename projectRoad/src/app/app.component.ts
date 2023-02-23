@@ -10,16 +10,21 @@ import { OnInit } from '@angular/core';
 export class AppComponent implements OnInit {
   title = 'projectRoad';
 
+  // function parse string
+  function parseString(str, tag) {
+    let res = str.split(tag);
+    res = res[1];
+    res = res.replace('>', '');
+    res = res.replace('</tns:', '');
+    return res;
+  }
+
   constructor(private caculSoapService: CaculSoapService) {}
 
   ngOnInit() {
     this.caculSoapService.getPageDataFromSoap().subscribe((data) => {
       console.log(data);
-      let res = data.split('calculer_temps_trajetResult');
-      res = res[1];
-      res = res.replace('>', '');
-      res = res.replace('</tns:', '');
-      console.log(res);
     });
   }
 }
+

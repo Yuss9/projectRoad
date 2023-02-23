@@ -24,6 +24,9 @@ export class CaculSoapService {
     </soapenv:Body>
 </soapenv:Envelope>`;
 
-    return this.http.post(url, soapData, options);
+    return this.http.post(url, soapData, options).pipe((data) => {
+      console.log(data);
+      
+    });
   }
 }
