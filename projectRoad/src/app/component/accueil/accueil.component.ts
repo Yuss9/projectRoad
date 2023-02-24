@@ -1,12 +1,13 @@
 import {Component, OnInit} from '@angular/core';
 import {CalculSoapService} from "../../service/calcul-soap.service";
-import {tap} from "rxjs/operators";
+import {GraphQLRequestService} from "../../service/graph-qlrequest.service";
+
 @Component({
   selector: 'app-accueil',
   templateUrl: './accueil.component.html',
   styleUrls: ['./accueil.component.scss'],
 })
-export class AccueilComponent implements OnInit  {
+export class AccueilComponent implements OnInit {
   brands: string[] = ['Tesla', "BMW", "Mercedes"];
   cities: string[] = ['Aix-les-Bains', "Terrain de basket", "Chambery"];
   distance_km!: number;
@@ -19,10 +20,11 @@ export class AccueilComponent implements OnInit  {
 
   resultat!: number;
 
-  constructor(private calculSoapService: CalculSoapService) {
+  constructor(private calculSoapService: CalculSoapService, private vehiculeService: GraphQLRequestService) {
   }
 
-  ngOnInit() {}
+  ngOnInit() {
+  }
 
   onSubmit(form: { valid: any; }) {
     if (form.valid) {
