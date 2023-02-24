@@ -9,7 +9,7 @@ import { tap, map } from 'rxjs/operators';
 export class CalculSoapService {
   constructor(private http: HttpClient) {}
 
-  getPageDataFromSoap(): Observable<any> {
+  getPageDataFromSoap(distanceKM : number,vitesse_km_h: number,temps_recharge_h: number, autonomie_km:number  ): Observable<any> {
     const url = 'http://localhost:8000';
     const options = { responseType: 'xml' as 'json' };
 
@@ -17,10 +17,10 @@ export class CalculSoapService {
     <soapenv:Header/>
     <soapenv:Body>
         <spy:calculer_temps_trajet>
-            <spy:distance_km>10</spy:distance_km>
-            <spy:vitesse_km_h>1</spy:vitesse_km_h>
-            <spy:autonomie_km>5</spy:autonomie_km>
-            <spy:temps_recharge_h>1</spy:temps_recharge_h>
+            <spy:distance_km> ${distanceKM} </spy:distance_km>
+            <spy:vitesse_km_h>${vitesse_km_h}</spy:vitesse_km_h>
+            <spy:autonomie_km>${autonomie_km}</spy:autonomie_km>
+            <spy:temps_recharge_h>${temps_recharge_h}</spy:temps_recharge_h>
         </spy:calculer_temps_trajet>
     </soapenv:Body>
 </soapenv:Envelope>`;

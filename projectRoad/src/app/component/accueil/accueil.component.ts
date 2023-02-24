@@ -1,18 +1,36 @@
-import { Component } from '@angular/core';
-
+import {Component, OnInit} from '@angular/core';
+import {CalculSoapService} from "../../service/calcul-soap.service";
+import {tap} from "rxjs/operators";
 @Component({
   selector: 'app-accueil',
   templateUrl: './accueil.component.html',
   styleUrls: ['./accueil.component.scss'],
 })
-export class AccueilComponent {
-  distance_km: number;
-  vitesse_km_h: number;
-  autonomie_km: number;
+export class AccueilComponent implements OnInit  {
+  brands: string[] = ['Tesla', "BMW", "Mercedes"];
+  cities: string[] = ['Aix-les-Bains', "Terrain de basket", "Chambery"];
+  distance_km!: number;
+  carBrand!: string;
+  startCity!: string;
+  endCity!: string;
+  vitesse_km_h!: number;
+  autonomie_km!: number;
+  temps_recharge_h!: number;
 
-  constructor() {
-    this.distance_km = 0;
-    this.vitesse_km_h = 0;
-    this.autonomie_km = 0;
+  resultat!: number;
+
+  constructor(private calculSoapService: CalculSoapService) {
+  }
+
+  ngOnInit() {}
+
+  onSubmit(form: { valid: any; }) {
+    if (form.valid) {
+      console.log('Formulaire valide');
+      console.log(this.distance_km);
+      // Appeler le service SOAP avec les valeurs de distance, vitesse et autonomie
+    } else {
+      console.log('Formulaire invalide');
+    }
   }
 }

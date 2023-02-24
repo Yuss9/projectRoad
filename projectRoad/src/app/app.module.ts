@@ -7,6 +7,7 @@ import { HttpClientModule } from '@angular/common/http';
 import { AccueilComponent } from './component/accueil/accueil.component';
 import { FormsModule } from '@angular/forms';
 
+
 @NgModule({
   declarations: [AppComponent, AccueilComponent],
   imports: [BrowserModule, AppRoutingModule, HttpClientModule, FormsModule],

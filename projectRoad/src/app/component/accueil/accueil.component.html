@@ -1,12 +1,39 @@
-<div>
-  <label for="distance_km">Distance (km) :</label>
-  <input type="number" id="distance_km" [(ngModel)]="distance_km" />
 
-  <label for="vitesse_km_h">Vitesse (km/h) :</label>
-  <input type="number" id="vitesse_km_h" [(ngModel)]="vitesse_km_h" />
+<div id="titleContainer"> <h1>Calculer le temps de trajet</h1> </div>
 
-  <label for="autonomie_km">Autonomie (km) :</label>
-  <input type="number" id="autonomie_km" [(ngModel)]="autonomie_km" />
+<div class="grid">
+  <div>
+    <div class="firstGrid">
+      <form #f="ngForm" (ngSubmit)="onSubmit(f)">
+        <div>
+          <label for="carBrand">Marque de la voiture :</label>
+          <select id="carBrand" name="carBrand" [(ngModel)]="carBrand" required >
+            <option *ngFor="let brand of brands" [value]="brand">{{brand}}</option>
+          </select>
+        </div>
+        <div>
+          <label for="startCity">Ville de depart :</label>
+          <select type="select" id="startCity" name="startCity" [(ngModel)]="startCity" required >
+            <option *ngFor="let city of cities" [value]="city">{{city}}</option>
+          </select>
+        </div>
+        <div>
+          <label for="endCity">Ville d'arrive :</label>
+          <select type="select" id="endCity" name="endCity" [(ngModel)]="endCity" required >
+            <option *ngFor="let city of cities" [value]="city">{{city}}</option>
+          </select>
+        </div>
+        <button type="submit">Calculer</button>
+      </form>
+      <p>Temps de trajet : {{resultat}} h</p>
 
-  <button>Calculer</button>
+    </div>
+  </div>
+  <div>
+    <div
+      class="secondGrid"
+    >
+      <img src="./assets/image/map.png" type="">
+      </div>
+  </div>
 </div>

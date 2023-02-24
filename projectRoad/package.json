@@ -21,6 +21,7 @@
     "@emotion/react": "^11.10.6",
     "@emotion/styled": "^11.10.6",
     "@mui/material": "^5.11.10",
+    "@picocss/pico": "^1.5.7",
     "ngx-soap": "^0.7.0",
     "rxjs": "~7.5.0",
     "tslib": "^2.3.0",

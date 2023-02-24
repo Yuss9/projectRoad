@@ -13,9 +13,5 @@ export class AppComponent implements OnInit {
   constructor(private calculSoapService: CalculSoapService) {}
 
   ngOnInit() {
-    this.calculSoapService
-      .getPageDataFromSoap()
-      .pipe(tap((value) => console.log(value)))
-      .subscribe();
   }
 }
