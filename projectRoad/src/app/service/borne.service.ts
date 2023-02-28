@@ -41,7 +41,6 @@ export class BorneService {
   }
 
   getLongLatOfCity(city: string, country: string, codePostal: string): Observable<any> {
-    //const url = `https://nominatim.openstreetmap.org/search?q=${city}&format=json`;
     const url = `https://nominatim.openstreetmap.org/search?q=${city}&country=${country}&format=json`;
     return this.http.get<any>(url).pipe(
       map(value => {

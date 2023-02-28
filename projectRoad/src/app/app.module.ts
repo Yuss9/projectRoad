@@ -6,11 +6,10 @@ import {AppComponent} from './app.component';
 import {AccueilComponent} from './component/accueil/accueil.component';
 import {FormsModule} from '@angular/forms';
 import {HttpClientModule} from '@angular/common/http';
-import { MapComponent } from './component/map/map.component';
 
 
 @NgModule({
-  declarations: [AppComponent, AccueilComponent, MapComponent],
+  declarations: [AppComponent, AccueilComponent],
   imports: [BrowserModule, AppRoutingModule, HttpClientModule, FormsModule],
   providers: [],
   bootstrap: [AppComponent],

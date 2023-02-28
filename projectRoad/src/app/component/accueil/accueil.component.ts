@@ -2,7 +2,25 @@ import {Component, OnInit} from '@angular/core';
 import {CalculSoapService} from "../../service/calcul-soap.service";
 import {GraphQLRequestService} from "../../service/graph-qlrequest.service";
 import {BorneService} from "../../service/borne.service";
-import * as L from "leaflet";
+
+import * as L from 'leaflet';
+import 'leaflet';
+import 'leaflet-routing-machine';
+
+const iconRetinaUrl = 'assets/marker-icon-2x.png';
+const iconUrl = 'assets/marker-icon.png';
+const shadowUrl = 'assets/marker-shadow.png';
+const iconDefault = L.icon({
+  iconRetinaUrl,
+  iconUrl,
+  shadowUrl,
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+  tooltipAnchor: [16, -28],
+  shadowSize: [41, 41]
+});
+L.Marker.prototype.options.icon = iconDefault;
 
 @Component({
   selector: 'app-accueil',
@@ -11,21 +29,27 @@ import * as L from "leaflet";
 })
 export class AccueilComponent implements OnInit {
   brands: string[] = ['Tesla', "BMW", "Mercedes"];
-  cities!: string[];
-  citiesArrived!: string[];
+  cities!: string[]; // liste des villes de départ
+  citiesArrived!: string[]; // liste des villes d'arrivée
   distance_km!: number;
-  carBrand!: string;
-  startCity!: string;
-  endCity!: string;
+  carBrand!: string; // marque de la voiture
+  startCity!: string; // ville de départ
+  endCity!: string; // ville d'arrivée
   vitesse_km_h!: number;
   autonomie_km!: number;
   temps_recharge_h!: number;
 
-  resultat!: number;
+  resultat!: number; // resultat du calcul
+
+
+  lat1!: number;
+  lon1!: number;
+  lat2!: number;
+  lon2!: number;
 
 
   // MAP
-  map: any;
+  map: any; // map
   greenIcon = L.icon({
     iconUrl: 'assets/image/icons8-electric-power-64.png',
     iconSize: [38, 38], // size of the icon
@@ -37,8 +61,11 @@ export class AccueilComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.map = L.map('map').setView([51.505, -0.09], 13);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {}).addTo(this.map);
+    this.map = L.map('map').setView([48.856614, 2.3522219], 13);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {}).addTo(
+      this.map
+    );
   }
 
   onUserInput(event: any, value: boolean) {
@@ -56,40 +83,58 @@ export class AccueilComponent implements OnInit {
 
   onSubmit(form: { valid: any; }) {
     if (form.valid) {
-      console.log(this.startCity);
-      console.log(this.endCity);
-      let codePostal = this.startCity.split(" ")[2];
-      let country = this.startCity.split(" ")[1];
-      let city = this.startCity.split(" ")[0];
+      let startcity = this.splitInput(this.startCity);
+      let endcity = this.splitInput(this.endCity);
 
-
-      let codePostalArrived = this.endCity.split(" ")[2];
-      let countryArrived = this.endCity.split(" ")[1];
-      let cityArrived = this.endCity.split(" ")[0];
-
-
-      this.borneService.getLongLatOfCity(city, country, codePostal).subscribe((data: any) => {
-        let lat = data.lat;
-        let long = data.lon;
-        this.addMarker(lat, long);
+      this.borneService.getLongLatOfCity(startcity[0], startcity[1], startcity[2]).subscribe((data: any) => {
+        this.lat1 = data.lat;
+        this.lon1 = data.lon;
+        console.log('lat1: ', this.lat1);
+        const marker = L.marker([this.lat1, this.lon1]).addTo(this.map);
+        marker.bindPopup('Départ: ' + this.startCity).openPopup();
       });
 
-      this.borneService.getLongLatOfCity(cityArrived, countryArrived, codePostalArrived).subscribe((data: any) => {
-        let lat = data.lat;
-        let long = data.lon;
-        this.addMarker(lat, long);
-      });
+      this.borneService.getLongLatOfCity(endcity[0], endcity[1], endcity[2],).subscribe((data: any) => {
+        this.lat2 = data.lat;
+        this.lon2 = data.lon;
+        const marker = L.marker([this.lat2, this.lon2]).addTo(this.map);
+        marker.bindPopup('Arrivée: ' + this.endCity).openPopup();
+        this.map.panTo(new L.LatLng(this.lat2, this.lon2));
+        const routingControl = L.Routing.control({
+          waypoints: [
+            L.latLng(this.lat1, this.lon1),
+            L.latLng(this.lat2, this.lon2),
+          ],
+          routeWhileDragging: true,
+          showAlternatives: true,
+        }).addTo(this.map);
+        //I need to get the geojson from the routing control
+        //and then use it to get the distance
+        //and then use it to get the duration
+        //and then use it to get the number of plugs needed
+        routingControl.on('routesfound', (e: any) => {
+          const routes = e.routes;
+          const distance = routes[0].summary.totalDistance;
+          const duration = routes[0].summary.totalTime;
+          // const plugsNeeded = this.calculatePlugsNeeded(distance, duration);
 
+          //this.soapCalcul.calculDuration(duration, this.lat1, this.lon1, this.lat2, this.lon2, this.autonomie, this.tempsRechargeMin).pipe(
+          console.log('distance: ', distance);
+          console.log('duration: ', duration);
+
+
+        });
+      });
       // Appeler le service SOAP avec les valeurs de distance, vitesse et autonomie
     } else {
       console.log('Formulaire invalide');
     }
   }
 
-
-  addMarker(lat: number, long: number) {
-    console.log("addMarker")
-    //this.map.setView(new L.LatLng(lat, long), {animation: true});
-    L.marker([lat, long], {icon: this.greenIcon}).addTo(this.map);
+  splitInput(input: string) {
+    let codePostal = input.split(" ")[2];
+    let country = input.split(" ")[1];
+    let city = input.split(" ")[0];
+    return [city, country, codePostal];
   }
 }
