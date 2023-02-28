@@ -11,6 +11,10 @@ export class BorneService {
   constructor(private http: HttpClient) {
   }
 
+  // getLatLongOfCity(city: string): Observable<any> {
+  //
+  // }
+
   getNameofCity(latitude: number, longitude: number): Observable<any> {
     const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`;
     return this.http.get<any>(url);

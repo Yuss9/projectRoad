@@ -57,13 +57,29 @@ export class AccueilComponent implements OnInit {
   onSubmit(form: { valid: any; }) {
     if (form.valid) {
       console.log(this.startCity);
+      console.log(this.endCity);
       let codePostal = this.startCity.split(" ")[2];
       let country = this.startCity.split(" ")[1];
       let city = this.startCity.split(" ")[0];
-      this.borneService.getLongLatOfCity(city, country, codePostal).subscribe((data) => {
-        console.log(data);
+
+
+      let codePostalArrived = this.endCity.split(" ")[2];
+      let countryArrived = this.endCity.split(" ")[1];
+      let cityArrived = this.endCity.split(" ")[0];
+
+
+      this.borneService.getLongLatOfCity(city, country, codePostal).subscribe((data: any) => {
+        let lat = data.lat;
+        let long = data.lon;
+        this.addMarker(lat, long);
       });
-      this.addMarker(48.856614, 2.3522219);
+
+      this.borneService.getLongLatOfCity(cityArrived, countryArrived, codePostalArrived).subscribe((data: any) => {
+        let lat = data.lat;
+        let long = data.lon;
+        this.addMarker(lat, long);
+      });
+
       // Appeler le service SOAP avec les valeurs de distance, vitesse et autonomie
     } else {
       console.log('Formulaire invalide');
@@ -71,8 +87,9 @@ export class AccueilComponent implements OnInit {
   }
 
 
-  addMarker(long: number, lat: number) {
-    this.map.setView(new L.LatLng(lat, long), {animation: true}, {icon: this.greenIcon});
-    L.marker(new L.LatLng(lat, long)).addTo(this.map);
+  addMarker(lat: number, long: number) {
+    console.log("addMarker")
+    //this.map.setView(new L.LatLng(lat, long), {animation: true});
+    L.marker([lat, long], {icon: this.greenIcon}).addTo(this.map);
   }
 }
