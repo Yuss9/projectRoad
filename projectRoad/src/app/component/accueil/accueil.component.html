@@ -12,17 +12,18 @@
         </div>
         <div>
           <label for="startCity">Ville de depart :</label>
-          <datalist [(ngModel)]="startCity" id="startCity" name="startCity" required>
+          <datalist id="startCity" name="startCity" required>
             <option *ngFor="let city of cities" [value]="city">{{city}}</option>
           </datalist>
-          <input autoComplete="on" list="startCity"/>
+          <input (input)="onUserInput($event, true)" [(ngModel)]="startCity" autoComplete="on" list="startCity"
+                 name="startCity"/>
         </div>
         <div>
           <label for="endCity">Ville d'arrive :</label>
-          <datalist [(ngModel)]="endCity" id="endCity" name="endCity" required>
-            <option *ngFor="let city of cities" [value]="city">{{city}}</option>
+          <datalist id="endCity" name="endCity" required>
+            <option *ngFor="let city of citiesArrived" [value]="city">{{city}}</option>
           </datalist>
-          <input autoComplete="on" list="endCity"/>
+          <input (input)="onUserInput($event, false)" [(ngModel)]="endCity" autoComplete="on" list="endCity"/>
         </div>
         <button type="submit">Calculer</button>
       </form>
@@ -34,7 +35,7 @@
     <div
       class="secondGrid"
     >
-      <app-map></app-map>
+      <div id="map" style="height: 500px;"></div>
     </div>
   </div>
 </div>
