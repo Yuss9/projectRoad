@@ -1,7 +1,5 @@
-import { Component } from '@angular/core';
-import { CalculSoapService } from './service/calcul-soap.service';
-import { OnInit } from '@angular/core';
-import { tap } from 'rxjs/operators';
+import {Component, OnInit} from '@angular/core';
+import {CalculSoapService} from './service/calcul-soap.service';
 
 @Component({
   selector: 'app-root',
@@ -10,8 +8,11 @@ import { tap } from 'rxjs/operators';
 })
 export class AppComponent implements OnInit {
   title = 'projectRoad';
-  constructor(private calculSoapService: CalculSoapService) {}
+
+  constructor(private calculSoapService: CalculSoapService) {
+  }
 
   ngOnInit() {
+
   }
 }

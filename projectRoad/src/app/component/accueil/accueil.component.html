@@ -1,5 +1,4 @@
-
-<div id="titleContainer"> <h1>Calculer le temps de trajet</h1> </div>
+<div id="titleContainer"><h1>Calculer le temps de trajet</h1></div>
 
 <div class="grid">
   <div>
@@ -7,21 +6,23 @@
       <form #f="ngForm" (ngSubmit)="onSubmit(f)">
         <div>
           <label for="carBrand">Marque de la voiture :</label>
-          <select id="carBrand" name="carBrand" [(ngModel)]="carBrand" required >
+          <select [(ngModel)]="carBrand" id="carBrand" name="carBrand" required>
             <option *ngFor="let brand of brands" [value]="brand">{{brand}}</option>
           </select>
         </div>
         <div>
           <label for="startCity">Ville de depart :</label>
-          <select type="select" id="startCity" name="startCity" [(ngModel)]="startCity" required >
+          <datalist [(ngModel)]="startCity" id="startCity" name="startCity" required>
             <option *ngFor="let city of cities" [value]="city">{{city}}</option>
-          </select>
+          </datalist>
+          <input autoComplete="on" list="startCity"/>
         </div>
         <div>
           <label for="endCity">Ville d'arrive :</label>
-          <select type="select" id="endCity" name="endCity" [(ngModel)]="endCity" required >
+          <datalist [(ngModel)]="endCity" id="endCity" name="endCity" required>
             <option *ngFor="let city of cities" [value]="city">{{city}}</option>
-          </select>
+          </datalist>
+          <input autoComplete="on" list="endCity"/>
         </div>
         <button type="submit">Calculer</button>
       </form>
@@ -33,7 +34,8 @@
     <div
       class="secondGrid"
     >
-      <img src="./assets/image/map.png" type="">
-      </div>
+      <app-map></app-map>
+    </div>
   </div>
 </div>
+

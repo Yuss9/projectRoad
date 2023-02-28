@@ -54,6 +54,7 @@
             "styles": [
               "src/styles.scss",
               "node_modules/@picocss/pico/css/pico.min.css",
+              "node_modules/leaflet/dist/leaflet.css"
             ],
             "scripts": []
           },
