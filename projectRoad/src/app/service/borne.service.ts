@@ -118,16 +118,55 @@ export class BorneService {
   // }
 
 
-  getPlugsNearCoordinate(x: number, y: number, distance: number): Observable<Object> {
+  // renvoi la borne la plus proche en fonction des coordonnées
+  getPlugsNearCoordinate(x: number, y: number, distance: number): Observable<any> {
     return this.http.get(plugServiceURL + "&geofilter.distance=" + x + "%2C" + y + "%2C" + distance).pipe(
       tap((data: any) => console.log(data)),
       map((data: any) => {
-        let name = data["records"][0].fields.ad_station;
-        let latitude = data["records"][0].geometry.coordinates[1];
-        let longitude = data["records"][0].geometry.coordinates[0];
-        let observations = data["records"][0].fields.observations;
+        let name = data["records"][0]?.fields?.ad_station;
+        let latitude = data["records"][0]?.geometry.coordinates[1];
+        let longitude = data["records"][0]?.geometry.coordinates[0];
+        let observations = data["records"][0]?.fields?.observations;
         return {name, latitude, longitude, observations};
       })
     )
+  }
+
+  getPlugsNearCoordinateSecure(x: number, y: number, distance: number): Observable<any> {
+    return this.http.get(plugServiceURL + "&geofilter.distance=" + x + "%2C" + y + "%2C" + distance).pipe(
+      map((data: any) => {
+        let name = data["records"][0]?.fields.ad_station;
+        let latitude = data["records"][0].geometry.coordinates[1];
+        let longitude = data["records"][0].geometry.coordinates[0];
+        let observations = data["records"][0]?.fields.observations;
+
+        if (latitude === undefined || longitude === undefined || observations === undefined || name === undefined) {
+          throw new Error("Latitude ou longitude indéfinie.");
+        }
+
+        return {name, latitude, longitude, observations};
+      })
+    );
+  }
+
+  getPlugsNearCoordinateBis(x: number, y: number, distance: number): Observable<any> {
+    return this.http.get(plugServiceURL + "&geofilter.distance=" + x + "%2C" + y + "%2C" + distance).pipe(
+      tap((data: any) => console.log(data)),
+      map((data: any) => {
+        let name = data["records"][0]?.fields?.ad_station;
+        let latitude = data["records"][0]?.geometry.coordinates[1];
+        let longitude = data["records"][0]?.geometry.coordinates[0];
+        let observations = data["records"][0]?.fields?.observations;
+        if (latitude === undefined || longitude === undefined) {
+          distance *= 10;
+          return this.getPlugsNearCoordinate(x, y, distance);
+        }
+        return {name, latitude, longitude, observations};
+      })
+    )
+  }
+
+  async getPlugsNearCoordinatev2(x: number, y: number, distance: number) {
+    return this.http.get(plugServiceURL + "&geofilter.distance=" + x + "%2C" + y + "%2C" + distance).toPromise()
   }
 }

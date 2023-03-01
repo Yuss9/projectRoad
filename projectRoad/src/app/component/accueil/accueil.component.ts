@@ -6,6 +6,8 @@ import * as L from 'leaflet';
 import 'leaflet';
 import 'leaflet-routing-machine';
 import 'leaflet-geometryutil';
+import {catchError, filter, Observable, repeatWhen, take} from "rxjs";
+import {tap} from "rxjs/operators";
 
 const iconRetinaUrl = 'assets/marker-icon-2x.png';
 const iconUrl = 'assets/marker-icon.png';
@@ -98,7 +100,6 @@ export class AccueilComponent implements OnInit {
       this.borneService.getLongLatOfCity(startcity[0], startcity[1], startcity[2]).subscribe((data: any) => {
         this.lat1 = data.lat;
         this.lon1 = data.lon;
-        console.log('lat1: ', this.lat1);
         const marker = L.marker([this.lat1, this.lon1]).addTo(this.map);
         marker.bindPopup('Départ: ' + this.startCity).openPopup();
       });
@@ -112,76 +113,92 @@ export class AccueilComponent implements OnInit {
         const routingControl = L.Routing.control({
           waypoints: [
             L.latLng(this.lat1, this.lon1),
-            // je recupere la lat et lon de ce point
-            // place les bornes les plus proche et ajoute sur la map
-            // je calcule a partir de ce point la distance en km donc 100km apres (2 eme arret)
             L.latLng(this.lat2, this.lon2),
           ],
           routeWhileDragging: true,
           showAlternatives: false,
         }).addTo(this.map);
-        routingControl.on('routesfound', (e: any) => {
+        routingControl.on('routesfound', async (e: any) => {
           const routes = e.routes;
           const distance = routes[0].summary.totalDistance;
           const distanceKm = distance / 1000;
           const duration = routes[0].summary.totalTime;
 
-          let arrayWaypoints: any = [];
           this.coordinates = routes[0].coordinates;
           this.lengthCoords = routes[0].coordinates.length;
-          const autonomy = 100;
-          const nbReloads = distanceKm / autonomy;
-          let index = (autonomy * this.lengthCoords) / distanceKm;
-          index = index - 400;
-          index = Math.floor(index);
+          let autonomie = 5;
+          let radius = 10000;
+          let arrayIndex = this.calculIndexArray(distanceKm, autonomie, this.lengthCoords);
+          let nbReloads = 0;
 
-          this.coordinates = routes[0].coordinates;
-          this.lengthCoords = routes[0].coordinates.length;
+          if (arrayIndex !== null) {
+            nbReloads = arrayIndex.length;
+          }
 
+          let observables: Observable<any> [] = [];
+          let arrayWaypoints: any = []
+          arrayWaypoints.push(L.latLng(this.lat1, this.lon1));
+          routingControl.setWaypoints(arrayWaypoints).addTo(this.map);
 
-          // // // RECUPERE LES COORDONNEES INITIALE
-          this.latBornes = routes[0].coordinates[index].lat;
-          this.lonBornes = routes[0].coordinates[index].lng;
+          if (arrayIndex !== null) {
+            for (let i = 0; i < nbReloads; i++) {
+              radius = 10000;
+              let index = arrayIndex[i];
+              let lat = this.coordinates[index].lat;
+              let lon = this.coordinates[index].lng;
 
-          // ENVOI A L'API LES COORDONNEES DE LA BORNE
-          this.borneService.getPlugsNearCoordinate(this.latBornes, this.lonBornes, 10000).subscribe((data: any) => {
-            this.CurrentBorne = data;
-            let arrayWaypoints = [
-              L.latLng(this.lat1, this.lon1),
-              L.latLng(this.CurrentBorne.latitude, this.CurrentBorne.longitude),
-              L.latLng(this.lat2, this.lon2),
-            ];
-            routingControl.setWaypoints(arrayWaypoints).addTo(this.map);
-          });
+              let obs: any = this.borneService.getPlugsNearCoordinateSecure(lat, lon, radius)
+                .pipe(
+                  repeatWhen(() => obs.pipe(
+                    filter(data => data !== null),
+                    take(1),
+                  )),
+                  tap((data: any) => {
+                    this.CurrentBorne = data;
+                  }),
+                  catchError(error => {
+                    radius *= 5;
+                    return this.borneService.getPlugsNearCoordinateSecure(lat, lon, radius);
+                  })
+                );
 
+              obs.subscribe((data: any) => {
+                observables.push(data);
+                arrayWaypoints.push(L.latLng(data.latitude, data.longitude));
+                const marker = L.marker([data.latitude, data.longitude]).addTo(this.map);
+                marker.bindPopup(data.name).openPopup();
+                routingControl.setWaypoints(arrayWaypoints).addTo(this.map);
+              });
+            }// fin for
 
-          // let arrayWaypoints = [
-          //   L.latLng(this.lat1, this.lon1),
-          //   L.latLng(this.latBornes, this.lonBornes),
-          //   L.latLng(this.lat2, this.lon2),
-          // ];
-
-          // console.l// let arrayWaypoints = [
-          //           //   L.latLng(this.lat1, this.lon1),
-          //           //   L.latLng(this.latBornes, this.lonBornes),
-          //           //   L.latLng(this.lat2, this.lon2),
-          //           // ];og(arrayWaypoints);
-          // routingControl.setWaypoints(arrayWaypoints).addTo(this.map);
-
-          // GET LA REPONSE
-          // MET A JOUR LAT BORNES ET LON BORNES
-
-
-          // const plugsNeeded = this.calculatePlugsNeeded(distance, duration);
+          }
+          arrayWaypoints.push(L.latLng(this.lat2, this.lon2));
+          routingControl.setWaypoints(arrayWaypoints).addTo(this.map);
         });
       });
-      // Appeler le service SOAP avec les valeurs de distance, vitesse et autonomie
     } else {
       console.log('Formulaire invalide');
     }
-  }
+  };
 
-  ;
+  calculIndexArray(distanceKm: number, autonomy: number, lengthCoords: number) {
+    if (autonomy < distanceKm) {
+      const nbReloads = distanceKm / autonomy;
+      let index = (autonomy * lengthCoords) / distanceKm;
+      index = index - 400;
+      if (index < 0)
+        index = 0;
+      index = Math.floor(index);
+
+      // Tableau index
+      let arrayIndex: any = [];
+      for (let i = 1; i <= nbReloads + 1; i++) {
+        arrayIndex.push(index * i);
+      }
+      return arrayIndex;
+    }
+    return null;
+  }
 
   splitInput(input: string) {
     let codePostal = input.split(" ")[2];
