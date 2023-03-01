@@ -2,7 +2,6 @@ import {Component, OnInit} from '@angular/core';
 import {CalculSoapService} from "../../service/calcul-soap.service";
 import {GraphQLRequestService} from "../../service/graph-qlrequest.service";
 import {BorneService} from "../../service/borne.service";
-
 import * as L from 'leaflet';
 import 'leaflet';
 import 'leaflet-routing-machine';
@@ -53,6 +52,11 @@ export class AccueilComponent implements OnInit {
   lonBornes!: number;
   lengthCoords!: number;
 
+  coordinates: any[] = [];
+  CurrentBorne!: any;
+
+
+  allPlugs: any[] = []
   // MAP
   map: any; // map
   greenIcon = L.icon({
@@ -71,10 +75,6 @@ export class AccueilComponent implements OnInit {
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {}).addTo(
       this.map
     );
-
-    this.borneService.getNearbyChargingStationsWithAutonomy("48.8520930694", "2.34738897685", "100").subscribe((data: any) => {
-      console.log(data);
-    });
   }
 
   onUserInput(event: any, value: boolean) {
@@ -112,8 +112,6 @@ export class AccueilComponent implements OnInit {
         const routingControl = L.Routing.control({
           waypoints: [
             L.latLng(this.lat1, this.lon1),
-            // je calcule a partir de mon pt de depart la distance en km donc 100km apres (1 er arret)
-            // j'envoi a l'api la lat et lon de ce point
             // je recupere la lat et lon de ce point
             // place les bornes les plus proche et ajoute sur la map
             // je calcule a partir de ce point la distance en km donc 100km apres (2 eme arret)
@@ -122,40 +120,59 @@ export class AccueilComponent implements OnInit {
           routeWhileDragging: true,
           showAlternatives: false,
         }).addTo(this.map);
-
-        //I need to get the geojson from the routing control
-        //and then use it to get the distance
-        //and then use it to get the duration
-        //and then use it to get the number of plugs needed
-
         routingControl.on('routesfound', (e: any) => {
           const routes = e.routes;
           const distance = routes[0].summary.totalDistance;
           const distanceKm = distance / 1000;
           const duration = routes[0].summary.totalTime;
 
+          let arrayWaypoints: any = [];
+          this.coordinates = routes[0].coordinates;
           this.lengthCoords = routes[0].coordinates.length;
           const autonomy = 100;
+          const nbReloads = distanceKm / autonomy;
           let index = (autonomy * this.lengthCoords) / distanceKm;
           index = index - 400;
           index = Math.floor(index);
-          console.log("index", index - 400);
 
+          this.coordinates = routes[0].coordinates;
+          this.lengthCoords = routes[0].coordinates.length;
+
+
+          // // // RECUPERE LES COORDONNEES INITIALE
           this.latBornes = routes[0].coordinates[index].lat;
           this.lonBornes = routes[0].coordinates[index].lng;
 
-          routingControl.setWaypoints([
-            L.latLng(this.lat1, this.lon1),
-            L.latLng(this.latBornes, this.lonBornes),
-            L.latLng(this.lat2, this.lon2),
-          ]).addTo(this.map);
+          // ENVOI A L'API LES COORDONNEES DE LA BORNE
+          this.borneService.getPlugsNearCoordinate(this.latBornes, this.lonBornes, 10000).subscribe((data: any) => {
+            this.CurrentBorne = data;
+            let arrayWaypoints = [
+              L.latLng(this.lat1, this.lon1),
+              L.latLng(this.CurrentBorne.latitude, this.CurrentBorne.longitude),
+              L.latLng(this.lat2, this.lon2),
+            ];
+            routingControl.setWaypoints(arrayWaypoints).addTo(this.map);
+          });
+
+
+          // let arrayWaypoints = [
+          //   L.latLng(this.lat1, this.lon1),
+          //   L.latLng(this.latBornes, this.lonBornes),
+          //   L.latLng(this.lat2, this.lon2),
+          // ];
+
+          // console.l// let arrayWaypoints = [
+          //           //   L.latLng(this.lat1, this.lon1),
+          //           //   L.latLng(this.latBornes, this.lonBornes),
+          //           //   L.latLng(this.lat2, this.lon2),
+          //           // ];og(arrayWaypoints);
+          // routingControl.setWaypoints(arrayWaypoints).addTo(this.map);
+
+          // GET LA REPONSE
+          // MET A JOUR LAT BORNES ET LON BORNES
+
 
           // const plugsNeeded = this.calculatePlugsNeeded(distance, duration);
-          //this.soapCalcul.calculDuration(duration, this.lat1, this.lon1, this.lat2, this.lon2, this.autonomie, this.tempsRechargeMin).pipe(
-          console.log('distance: ', distance);
-          console.log('duration: ', duration);
-          // console.log('plugsNeeded: ', plugsNeeded);
-          console.log('routes', routes[0])
         });
       });
       // Appeler le service SOAP avec les valeurs de distance, vitesse et autonomie
@@ -164,6 +181,8 @@ export class AccueilComponent implements OnInit {
     }
   }
 
+  ;
+
   splitInput(input: string) {
     let codePostal = input.split(" ")[2];
     let country = input.split(" ")[1];
@@ -171,3 +190,4 @@ export class AccueilComponent implements OnInit {
     return [city, country, codePostal];
   }
 }
+

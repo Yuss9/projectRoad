@@ -1,14 +1,17 @@
 import {Injectable} from '@angular/core';
 import {HttpClient} from "@angular/common/http";
 import {Observable} from "rxjs";
-import {map} from "rxjs/operators";
+import {map, tap} from "rxjs/operators";
 
-export const plugServiceURL = "https://opendata.reseaux-energies.fr/api/records/1.0/search/?dataset=bornes-irve"
+export const plugServiceURL = "https://odre.opendatasoft.com/api/records/1.0/search/?dataset=bornes-irve";
 
 @Injectable({
   providedIn: 'root'
 })
 export class BorneService {
+
+
+  allPlugs: any[] = []
 
   constructor(private http: HttpClient) {
   }
@@ -57,37 +60,74 @@ export class BorneService {
     );
   }
 
-  getNearbyChargingStationsWithAutonomy(latitude: string, longitude: string, radius: string): Observable<any> {
-    //https://opendata.reseaux-energies.fr/api/records/1.0/search/?dataset=bornes-irve&q=&rows=10&geofilter.distance=48.8520930694%2C2.34738897685%2C100&refine.distance_autonomie%3E=100
-    console.log(latitude)
-    console.log(longitude)
-    console.log(radius)
-    const urlVar = plugServiceURL + "&q=&rows=10&geofilter.distance=" + latitude + "%2C" + longitude + "%2C" + radius;
-    const url = `https://opendata.reseaux-energies.fr/api/records/1.0/search/?dataset=bornes-irve&q=&rows=10&geofilter.distance=48.8520930694%2C2.34738897685%2C100&refine.distance_autonomie%3E=100`;
-    console.log(urlVar)
-    console.log(url)
-    return this.http.get<any>(urlVar).pipe(
-      map(value => {
-          // parcours la liste des bornes et reucpere les infos suivant  : puiss_max, geo_point_borne, ad_station, accessibilite
-          console.log(value)
-          var bornes = [];
-          console.log(value.records.length)
-          for (var i = 0; i < value.records.length; i++) {
-            bornes.push({
-              puissMax: value.records[i].fields.puiss_max,
-              geo_point_borne: value.records[i].fields.geo_point_borne,
-              ad_station: value.records[i].fields.ad_station,
-              accessibilite: value.records[i].fields.accessibilite
-            });
-          }
-          return bornes;
-        }
-      ));
-  }
+  // return all electric borne on the road
+  // x y are the coordinates of first placement of Plug
+  // getALlPlugs(x: number, y: number, distance: number, autonomy: number, distanceKm: number, lenghtCoord: number, coord: any[]) {
+  //
+  //   let numberOfPlugs = Math.floor(autonomy / distanceKm);
+  //   for (var i = 0; i < numberOfPlugs; i++) {
+  //     this.getPlugsNearCoordinate(x, y, distance).pipe(
+  //       map((value: any) => {
+  //           let plug = {
+  //             name: value.name,
+  //             latitude: value.latitude,
+  //             longitude: value.longitude,
+  //             observations: value.observations
+  //           };
+  //           this.allPlugs.push(plug);
+  //           return this.allPlugs;
+  //         }
+  //       ));// end map
+  //
+  //     // formule
+  //     let index = (autonomy * lenghtCoord) / distanceKm;
+  //     index = index - 400;
+  //     index = Math.floor(index);
+  //     // RECUPERE LES COORDONNEES INITIALE
+  //     x = coord[index].lat;
+  //     y = coord[index].lon;
+  //     console.log(i);
+  //     console.log(this.allPlugs);
+  //   }
+  //   return this.allPlugs;
+  // }
 
 
-  getNearbyChargingStations(latitude: number, longitude: number, radius: number): Observable<any> {
-    const url = `https://opendata.reseaux-energies.fr/api/records/1.0/search/?dataset=bornes-irve&q=&geofilter.polygon=(48.883086%2C2.379072)%2C(48.879022%2C2.379930)%2C(48.883651%2C2.386968)`;
-    return this.http.get<any>(url);
+  // getALlPlugs(x: number, y: number, distance: number, autonomy: number, distanceKm: number, lenghtCoord: number, coord: any[], indexArray: number[]): Observable<any> {
+  //   let numberOfPlugs = Math.floor(autonomy / distanceKm);
+  //   let observables = [];
+  //
+  //   for (let i = 0; i < numberOfPlugs - 1; i++) {
+  //     let observable = this.getPlugsNearCoordinate(x, y, distance).pipe(
+  //       map((value: any) => {
+  //         let plug = {
+  //           name: value.name,
+  //           latitude: value.latitude,
+  //           longitude: value.longitude,
+  //           observations: value.observations
+  //         };
+  //         return plug;
+  //       })
+  //     );
+  //     observables.push(observable);
+  //     let index = indexArray[i];
+  //     x = coord[index].lat;
+  //     y = coord[index].lon;
+  //   }
+  //   console.log("service ", observables)
+  // }
+
+
+  getPlugsNearCoordinate(x: number, y: number, distance: number): Observable<Object> {
+    return this.http.get(plugServiceURL + "&geofilter.distance=" + x + "%2C" + y + "%2C" + distance).pipe(
+      tap((data: any) => console.log(data)),
+      map((data: any) => {
+        let name = data["records"][0].fields.ad_station;
+        let latitude = data["records"][0].geometry.coordinates[1];
+        let longitude = data["records"][0].geometry.coordinates[0];
+        let observations = data["records"][0].fields.observations;
+        return {name, latitude, longitude, observations};
+      })
+    )
   }
 }
