@@ -12,13 +12,16 @@ export class BorneService {
 
 
   allPlugs: any[] = []
-
-  constructor(private http: HttpClient) {
-  }
+  // service
+  private API_URI = 'https://odre.opendatasoft.com/api/records/1.0/search/?dataset=bornes-irve&q=&';
 
   // getLatLongOfCity(city: string): Observable<any> {
   //
   // }
+  private APIGEO = 'https://nominatim.openstreetmap.org/';
+
+  constructor(private http: HttpClient) {
+  }
 
   getNameofCity(latitude: number, longitude: number): Observable<any> {
     const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`;
@@ -37,25 +40,6 @@ export class BorneService {
           cities.push(value[i].display_name);
         }
         return cities;
-      })
-    );
-  }
-
-  onUserInput(event: any) {
-    this.getCities(event.target.value).pipe();
-  }
-
-  getLongLatOfCity(city: string, country: string, codePostal: string): Observable<any> {
-    const url = `https://nominatim.openstreetmap.org/search?q=${city}&country=${country}&format=json`;
-    return this.http.get<any>(url).pipe(
-      map(value => {
-        var place = {lat: value[0].lat, lon: value[0].lon};
-        for (var i = 0; i < value.length; i++) {
-          if (value[i].display_name.includes(codePostal)) {
-            place = {lat: value[i].lat, lon: value[i].lon};
-          }
-        }
-        return place;
       })
     );
   }
@@ -117,6 +101,34 @@ export class BorneService {
   //   console.log("service ", observables)
   // }
 
+  onUserInput(event: any) {
+    this.getCities(event.target.value).pipe();
+  }
+
+  getLongLatOfCity(city: string, country: string, codePostal: string): Observable<any> {
+    const url = `https://nominatim.openstreetmap.org/search?q=${city}&country=${country}&format=json`;
+    return this.http.get<any>(url).pipe(
+      map(value => {
+        var place = {lat: value[0].lat, lon: value[0].lon};
+        for (var i = 0; i < value.length; i++) {
+          if (value[i].display_name.includes(codePostal)) {
+            place = {lat: value[i].lat, lon: value[i].lon};
+          }
+        }
+        return place;
+      })
+    );
+  }
+
+  getGeoCoding(cityName: string): Observable<{ lat: number, lon: number }> {
+    const uri = `${this.APIGEO}/search?q=${cityName}&format=json`;
+
+    return this.http.get<any>(uri).pipe(
+      map(value => {
+        return {lat: value[0].lat, lon: value[0].lon};
+      })
+    );
+  }
 
   // renvoi la borne la plus proche en fonction des coordonnées
   getPlugsNearCoordinate(x: number, y: number, distance: number): Observable<any> {
@@ -126,14 +138,22 @@ export class BorneService {
         let name = data["records"][0]?.fields?.ad_station;
         let latitude = data["records"][0]?.geometry.coordinates[1];
         let longitude = data["records"][0]?.geometry.coordinates[0];
-        let observations = data["records"][0]?.fields?.observations;
+        let observations = data["records"][0]?.fields?.observation;
         return {name, latitude, longitude, observations};
       })
     )
   }
 
+  getBorne(lat: number, lon: number, radius: number): Observable<any[]> {
+    const uri = this.API_URI + `geofilter.distance=${lat}%2C${lon}%2C${radius}`;
+
+    return this.http.get<any>(uri).pipe(
+      map(value => value.records[0])
+    );
+  }
+
   getPlugsNearCoordinateSecure(x: number, y: number, distance: number): Observable<any> {
-    return this.http.get(plugServiceURL + "&geofilter.distance=" + x + "%2C" + y + "%2C" + distance).pipe(
+    return this.http.get(plugServiceURL + "&geofilter.distance=" + y + "%2C" + x + "%2C" + distance).pipe(
       map((data: any) => {
         let name = data["records"][0]?.fields.ad_station;
         let latitude = data["records"][0].geometry.coordinates[1];

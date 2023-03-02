@@ -6,8 +6,8 @@ import * as L from 'leaflet';
 import 'leaflet';
 import 'leaflet-routing-machine';
 import 'leaflet-geometryutil';
-import {catchError, filter, Observable, repeatWhen, take} from "rxjs";
 import {tap} from "rxjs/operators";
+import {Observable, zip} from "rxjs";
 
 const iconRetinaUrl = 'assets/marker-icon-2x.png';
 const iconUrl = 'assets/marker-icon.png';
@@ -58,6 +58,8 @@ export class AccueilComponent implements OnInit {
   CurrentBorne!: any;
 
 
+  myArrayIndex: number[] = [];
+
   allPlugs: any[] = []
   // MAP
   map: any; // map
@@ -94,88 +96,21 @@ export class AccueilComponent implements OnInit {
 
   onSubmit(form: { valid: any; }) {
     if (form.valid) {
-      let startcity = this.splitInput(this.startCity);
-      let endcity = this.splitInput(this.endCity);
+      zip(
+        this.borneService.getGeoCoding(this.startCity),
+        this.borneService.getGeoCoding(this.endCity)
+      ).pipe(
+        tap(value => {
+          const start = value[0];
+          const dest = value[1];
 
-      this.borneService.getLongLatOfCity(startcity[0], startcity[1], startcity[2]).subscribe((data: any) => {
-        this.lat1 = data.lat;
-        this.lon1 = data.lon;
-        const marker = L.marker([this.lat1, this.lon1]).addTo(this.map);
-        marker.bindPopup('Départ: ' + this.startCity).openPopup();
-      });
+          const waypoint1 = new L.LatLng(start.lat, start.lon);
+          const waypoint2 = new L.LatLng(dest.lat, dest.lon);
 
-      this.borneService.getLongLatOfCity(endcity[0], endcity[1], endcity[2],).subscribe((data: any) => {
-        this.lat2 = data.lat;
-        this.lon2 = data.lon;
-        const marker = L.marker([this.lat2, this.lon2]).addTo(this.map);
-        marker.bindPopup('Arrivée: ' + this.endCity).openPopup();
-        this.map.panTo(new L.LatLng(this.lat2, this.lon2));
-        const routingControl = L.Routing.control({
-          waypoints: [
-            L.latLng(this.lat1, this.lon1),
-            L.latLng(this.lat2, this.lon2),
-          ],
-          routeWhileDragging: true,
-          showAlternatives: false,
-        }).addTo(this.map);
-        routingControl.on('routesfound', async (e: any) => {
-          const routes = e.routes;
-          const distance = routes[0].summary.totalDistance;
-          const distanceKm = distance / 1000;
-          const duration = routes[0].summary.totalTime;
+          this.firstTraceRoute([waypoint1, waypoint2]);
+        })
+      ).subscribe();
 
-          this.coordinates = routes[0].coordinates;
-          this.lengthCoords = routes[0].coordinates.length;
-          let autonomie = 5;
-          let radius = 10000;
-          let arrayIndex = this.calculIndexArray(distanceKm, autonomie, this.lengthCoords);
-          let nbReloads = 0;
-
-          if (arrayIndex !== null) {
-            nbReloads = arrayIndex.length;
-          }
-
-          let observables: Observable<any> [] = [];
-          let arrayWaypoints: any = []
-          arrayWaypoints.push(L.latLng(this.lat1, this.lon1));
-          routingControl.setWaypoints(arrayWaypoints).addTo(this.map);
-
-          if (arrayIndex !== null) {
-            for (let i = 0; i < nbReloads; i++) {
-              radius = 10000;
-              let index = arrayIndex[i];
-              let lat = this.coordinates[index].lat;
-              let lon = this.coordinates[index].lng;
-
-              let obs: any = this.borneService.getPlugsNearCoordinateSecure(lat, lon, radius)
-                .pipe(
-                  repeatWhen(() => obs.pipe(
-                    filter(data => data !== null),
-                    take(1),
-                  )),
-                  tap((data: any) => {
-                    this.CurrentBorne = data;
-                  }),
-                  catchError(error => {
-                    radius *= 5;
-                    return this.borneService.getPlugsNearCoordinateSecure(lat, lon, radius);
-                  })
-                );
-
-              obs.subscribe((data: any) => {
-                observables.push(data);
-                arrayWaypoints.push(L.latLng(data.latitude, data.longitude));
-                const marker = L.marker([data.latitude, data.longitude]).addTo(this.map);
-                marker.bindPopup(data.name).openPopup();
-                routingControl.setWaypoints(arrayWaypoints).addTo(this.map);
-              });
-            }// fin for
-
-          }
-          arrayWaypoints.push(L.latLng(this.lat2, this.lon2));
-          routingControl.setWaypoints(arrayWaypoints).addTo(this.map);
-        });
-      });
     } else {
       console.log('Formulaire invalide');
     }
@@ -205,6 +140,68 @@ export class AccueilComponent implements OnInit {
     let country = input.split(" ")[1];
     let city = input.split(" ")[0];
     return [city, country, codePostal];
+  }
+
+  private firstTraceRoute(waypoints: L.LatLng[]) {
+    const routing = L.Routing.control({
+      waypoints: waypoints
+    }).addTo(this.map);
+
+    routing.on('routesfound', (e) => {
+      const distanceKm = e.routes[0].summary.totalDistance / 1000;
+      const coords = e.routes[0].coordinates;
+      const autonomyKm = 100;
+
+      // we calcul when we need electric power
+      let index = this.calculIndexArray(distanceKm, autonomyKm, coords.length);
+
+      // if we need it on the road
+      if (index != null) {
+        const observables: Observable<any>[] = [];
+
+        // for each, we want to find the nearest charging point
+        index.forEach((p: number) => {
+          if (coords[p]) {
+            // we add all the query in an array to send them at the same time
+            observables.push(this.borneService.getBorne(coords[p].lat, coords[p].lng, 100000));
+          }
+        });
+
+        // send all the query
+        zip(...observables).pipe(
+          tap(value => {
+            // we create a new route form start to dest passing through charging point
+            const newWaypoints: any[] = [];
+            newWaypoints.push(waypoints[0]);
+
+            value.forEach(v => {
+              newWaypoints.push(new L.LatLng(v.fields.ylatitude, v.fields.xlongitude))
+            });
+
+            newWaypoints.push(waypoints[1]);
+
+            // trace new route and delete old route
+            this.secondTraceRoute(newWaypoints, routing);
+          })
+        ).subscribe();
+      }
+    });
+  }
+
+  private secondTraceRoute(waypoints: L.LatLng[], routeToRemove: any) {
+    // trace new route
+    const routing = L.Routing.control({
+      waypoints: waypoints
+    }).addTo(this.map);
+
+    // delete old route
+    this.map.removeControl(routeToRemove);
+
+    routing.on('routesfound', (e) => {
+      const distanceKm = e.routes[0].summary.totalDistance / 1000;
+
+      console.log('distanceKm : ' + distanceKm);
+    })
   }
 }
 
