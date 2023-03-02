@@ -23,6 +23,7 @@
     "@mui/material": "^5.11.10",
     "@picocss/pico": "^1.5.7",
     "@types/leaflet": "^1.9.1",
+    "apollo-angular": "^4.2.1",
     "graphql": "^16.6.0",
     "graphql-tag": "^2.12.6",
     "leaflet": "^1.9.3",
@@ -33,7 +34,8 @@
     "rxjs": "~7.5.0",
     "tslib": "^2.3.0",
     "xml2js": "^0.4.23",
-    "zone.js": "~0.12.0"
+    "zone.js": "~0.12.0",
+    "@apollo/client": "^3.0.0"
   },
   "devDependencies": {
     "@angular-devkit/build-angular": "^15.0.2",

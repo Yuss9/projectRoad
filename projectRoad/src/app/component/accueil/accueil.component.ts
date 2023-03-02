@@ -75,14 +75,13 @@ export class AccueilComponent implements OnInit {
 
   ngOnInit() {
     this.map = L.map('map').setView([48.856614, 2.3522219], 13);
-
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {}).addTo(
       this.map
     );
   }
 
   onUserInput(event: any, value: boolean) {
-    // permet d'afficher les villes chercher
+    //permet d'afficher les villes chercher
     // if (value) {
     //   this.borneService.getCities(event.target.value).subscribe((data: any) => {
     //     this.cities = data;
