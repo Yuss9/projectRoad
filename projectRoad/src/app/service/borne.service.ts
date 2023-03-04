@@ -28,7 +28,7 @@ export class BorneService {
     return this.http.get<any>(url).pipe(
       map(value => {
         var cities: string[] = [];
-        // for (var i = 0; i < value.length; i++) {
+        // for (var i = 0; i < value.length; i++)
         //   cities.push(value[i].display_name);
         // }
         for (var i = 0; i < 10; i++) {

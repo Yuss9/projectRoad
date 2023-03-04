@@ -5,10 +5,17 @@
     <div class="firstGrid">
       <form #f="ngForm" (ngSubmit)="onSubmit(f)">
         <div>
+          <!--          <label for="carBrand">Marque de la voiture :</label>-->
+          <!--          <select [(ngModel)]="carBrand" id="carBrand" name="carBrand" required>-->
+          <!--            <option *ngFor="let brand of brands" [value]="brand">{{brand}}</option>-->
+          <!--          </select>-->
           <label for="carBrand">Marque de la voiture :</label>
-          <select [(ngModel)]="carBrand" id="carBrand" name="carBrand" required>
+          <datalist id="carBrand" name="carBrand" required>
             <option *ngFor="let brand of brands" [value]="brand">{{brand}}</option>
-          </select>
+          </datalist>
+          <input (input)="onCarInput($event)" [(ngModel)]="carBrand" autoComplete="on" list="carBrand"
+                 name="carBrand"/>
+
         </div>
         <div>
           <label for="startCity">Ville de depart :</label>

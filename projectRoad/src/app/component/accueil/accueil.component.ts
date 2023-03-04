@@ -30,7 +30,11 @@ L.Marker.prototype.options.icon = iconDefault;
   styleUrls: ['./accueil.component.scss'],
 })
 export class AccueilComponent implements OnInit {
-  brands: string[] = ['Tesla', "BMW", "Mercedes"];
+  brands!: string[]; // liste des marques de voiture
+  carList!: any[]; // liste des marques de voiture
+
+  currentCar!: any; // voiture sélectionnée
+
   cities!: string[]; // liste des villes de départ
   citiesArrived!: string[]; // liste des villes d'arrivée
   distance_km!: number;
@@ -70,7 +74,7 @@ export class AccueilComponent implements OnInit {
     popupAnchor: [-3, -76] // point from which the popup should open relative to the iconAnchor
   });
 
-  constructor(private calculSoapService: CalculSoapService, private vehiculeService: GraphQLRequestService, private borneService: BorneService) {
+  constructor(private calculSoapService: CalculSoapService, private vehiculeService: GraphQLRequestService, private borneService: BorneService, private voitureService: GraphQLRequestService) {
   }
 
   ngOnInit() {
@@ -80,6 +84,22 @@ export class AccueilComponent implements OnInit {
     );
   }
 
+  // fonction qui permet de récupérer les informations  des marques de voiture
+  onCarInput(event: any) {
+    // add in this.brands test element
+    // update search result
+    this.brands = [];
+    this.carList = [];
+
+    this.vehiculeService.getCarInformaitonWithName(event.target.value).subscribe((data: any) => {
+      this.carList = data;
+      this.carList.forEach((car: any) => {
+        this.brands.push(car.model + ' ' + car.make);
+      });
+    });
+  }
+
+  // fonction qui permet de récupérer les informations  des lieux de départ et d'arrivée
   onUserInput(event: any, value: boolean) {
     //permet d'afficher les villes chercher
     // if (value) {
@@ -95,20 +115,33 @@ export class AccueilComponent implements OnInit {
 
   onSubmit(form: { valid: any; }) {
     if (form.valid) {
+      console.log('Formulaire valide', this.carBrand);
+      // search in carList the carBrand id
+      let carId = '';
+      this.carList.forEach((car: any) => {
+        if (car.model + ' ' + car.make === this.carBrand) {
+          carId = car.id;
+        }
+      });
+
       zip(
         this.borneService.getGeoCoding(this.startCity),
-        this.borneService.getGeoCoding(this.endCity)
+        this.borneService.getGeoCoding(this.endCity),
+        this.vehiculeService.getCarInformationWithID(carId)
       ).pipe(
         tap(value => {
           const start = value[0];
           const dest = value[1];
+          const currentCar = value[2];
+
 
           const waypoint1 = new L.LatLng(start.lat, start.lon);
           const waypoint2 = new L.LatLng(dest.lat, dest.lon);
 
-          this.firstTraceRoute([waypoint1, waypoint2]);
+          this.firstTraceRoute([waypoint1, waypoint2], currentCar.autonomy);
         })
       ).subscribe();
+      // console log current car
 
     } else {
       console.log('Formulaire invalide');
@@ -141,7 +174,7 @@ export class AccueilComponent implements OnInit {
     return [city, country, codePostal];
   }
 
-  private firstTraceRoute(waypoints: L.LatLng[]) {
+  private firstTraceRoute(waypoints: L.LatLng[], autonomy: number) {
     const routing = L.Routing.control({
       waypoints: waypoints
     }).addTo(this.map);
@@ -149,7 +182,7 @@ export class AccueilComponent implements OnInit {
     routing.on('routesfound', (e) => {
       const distanceKm = e.routes[0].summary.totalDistance / 1000;
       const coords = e.routes[0].coordinates;
-      const autonomyKm = 100;
+      const autonomyKm = autonomy;
 
       // we calcul when we need electric power
       let index = this.calculIndexArray(distanceKm, autonomyKm, coords.length);

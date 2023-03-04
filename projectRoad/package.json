@@ -11,6 +11,7 @@
   "private": true,
   "dependencies": {
     "@angular/animations": "^15.0.0",
+    "@angular/cdk": "^15.2.0",
     "@angular/common": "^15.0.0",
     "@angular/compiler": "^15.0.0",
     "@angular/core": "^15.0.0",
@@ -18,12 +19,14 @@
     "@angular/platform-browser": "^15.0.0",
     "@angular/platform-browser-dynamic": "^15.0.0",
     "@angular/router": "^15.0.0",
-    "@emotion/react": "^11.10.6",
-    "@emotion/styled": "^11.10.6",
+    "@apollo/client": "^3.3.2",
     "@mui/material": "^5.11.10",
     "@picocss/pico": "^1.5.7",
     "@types/leaflet": "^1.9.1",
     "apollo-angular": "^4.2.1",
+    "apollo-angular-link-http": "^1.11.0",
+    "apollo-link-context": "^1.0.20",
+    "apollo-link-logger": "^2.0.1",
     "graphql": "^16.6.0",
     "graphql-tag": "^2.12.6",
     "leaflet": "^1.9.3",
@@ -31,11 +34,11 @@
     "leaflet-routing-machine": "^3.2.12",
     "leaflet-routing-machine-here": "^2.1.0",
     "ngx-soap": "^0.7.0",
+    "react": "^18.2.0",
     "rxjs": "~7.5.0",
     "tslib": "^2.3.0",
     "xml2js": "^0.4.23",
-    "zone.js": "~0.12.0",
-    "@apollo/client": "^3.0.0"
+    "zone.js": "~0.12.0"
   },
   "devDependencies": {
     "@angular-devkit/build-angular": "^15.0.2",
