@@ -33,38 +33,15 @@ export class AccueilComponent implements OnInit {
   brands!: string[]; // liste des marques de voiture
   carList!: any[]; // liste des marques de voiture
 
-  currentCar!: any; // voiture sélectionnée
-
   cities!: string[]; // liste des villes de départ
   citiesArrived!: string[]; // liste des villes d'arrivée
-  distance_km!: number;
   carBrand!: string; // marque de la voiture
   startCity!: string; // ville de départ
   endCity!: string; // ville d'arrivée
-  vitesse_km_h!: number;
-  autonomie_km!: number;
-  temps_recharge_h!: number;
 
   resultat!: number; // resultat du calcul
 
-
-  lat1!: number;
-  lon1!: number;
-  lat2!: number;
-  lon2!: number;
-
-
-  latBornes!: number;
-  lonBornes!: number;
-  lengthCoords!: number;
-
   coordinates: any[] = [];
-  CurrentBorne!: any;
-
-
-  myArrayIndex: number[] = [];
-
-  allPlugs: any[] = []
   // MAP
   map: any; // map
   greenIcon = L.icon({
@@ -94,7 +71,7 @@ export class AccueilComponent implements OnInit {
     this.vehiculeService.getCarInformaitonWithName(event.target.value).subscribe((data: any) => {
       this.carList = data;
       this.carList.forEach((car: any) => {
-        this.brands.push(car.model + ' ' + car.make);
+        this.brands.push(car.model + ' ' + car.make + ' autonomie ' + car.autonomy + ' km');
       });
     });
   }
@@ -115,11 +92,10 @@ export class AccueilComponent implements OnInit {
 
   onSubmit(form: { valid: any; }) {
     if (form.valid) {
-      console.log('Formulaire valide', this.carBrand);
       // search in carList the carBrand id
       let carId = '';
       this.carList.forEach((car: any) => {
-        if (car.model + ' ' + car.make === this.carBrand) {
+        if (car.model + ' ' + car.make + ' autonomie ' + car.autonomy + ' km' === this.carBrand) {
           carId = car.id;
         }
       });
@@ -127,7 +103,7 @@ export class AccueilComponent implements OnInit {
       zip(
         this.borneService.getGeoCoding(this.startCity),
         this.borneService.getGeoCoding(this.endCity),
-        this.vehiculeService.getCarInformationWithID(carId)
+        this.vehiculeService.getCarInformationWithID(carId),
       ).pipe(
         tap(value => {
           const start = value[0];
@@ -138,10 +114,13 @@ export class AccueilComponent implements OnInit {
           const waypoint1 = new L.LatLng(start.lat, start.lon);
           const waypoint2 = new L.LatLng(dest.lat, dest.lon);
 
+          this.calculSoapService.getDistanceV2(start.lat, start.lon, dest.lat, dest.lon, 60, 30, currentCar.autonomy).subscribe((data: any) => {
+            this.resultat = data;
+          });
+
           this.firstTraceRoute([waypoint1, waypoint2], currentCar.autonomy);
         })
       ).subscribe();
-      // console log current car
 
     } else {
       console.log('Formulaire invalide');

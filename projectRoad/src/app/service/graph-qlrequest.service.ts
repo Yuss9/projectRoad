@@ -84,6 +84,12 @@ export class GraphQLRequestService {
               model
               make
             }
+            range {
+              chargetrip_range {
+                best
+                worst
+              }
+            }
           }
         }`
     }).valueChanges.pipe(
@@ -91,13 +97,15 @@ export class GraphQLRequestService {
 
         // print name of car
         let data = value.data.vehicleList;
-        console.log(data);
         let carName: any[] = [];
         for (let i = 0; i < data.length; i++) {
           let id = data[i].id;
           let model = data[i].naming.model
           let make = data[i].naming.make
-          carName.push({id, model, make});
+
+          let autonomy = (data[i].range.chargetrip_range.best + data[i].range.chargetrip_range.worst) / 2;
+
+          carName.push({id, model, make, autonomy});
         }
         return carName;
       })
