@@ -7,44 +7,67 @@
         <div>
           <label for="carBrand">Marque de la voiture :</label>
           <datalist id="carBrand" name="carBrand" required>
-            <option *ngFor="let brand of brands" [value]="brand">{{brand}}</option>
+            <option *ngFor="let brand of brands" [value]="brand">
+              {{ brand }}
+            </option>
           </datalist>
-          <input (input)="onCarInput($event)" [(ngModel)]="carBrand" autoComplete="on" list="carBrand"
-                 name="carBrand"/>
-
+          <input
+            (input)="onCarInput($event)"
+            [(ngModel)]="carBrand"
+            autoComplete="on"
+            list="carBrand"
+            name="carBrand"
+          />
         </div>
         <div>
           <label for="startCity">Ville de depart :</label>
           <datalist id="startCity" name="startCity" required>
-            <option *ngFor="let city of cities" [value]="city">{{city}}</option>
+            <option *ngFor="let city of cities" [value]="city">
+              {{ city }}
+            </option>
           </datalist>
-          <input (input)="onUserInput($event, true)" [(ngModel)]="startCity" autoComplete="on" list="startCity"
-                 name="startCity"/>
+          <input
+            (input)="onUserInput($event, true)"
+            [(ngModel)]="startCity"
+            autoComplete="on"
+            list="startCity"
+            name="startCity"
+          />
         </div>
         <div>
           <label for="endCity">Ville d'arrive :</label>
           <datalist id="endCity" name="endCity" required>
-            <option *ngFor="let city of citiesArrived" [value]="city">{{city}}</option>
+            <option *ngFor="let city of citiesArrived" [value]="city">
+              {{ city }}
+            </option>
           </datalist>
-          <input (input)="onUserInput($event, false)" [(ngModel)]="endCity" autoComplete="on" list="endCity"
-                 name="endCity"/>
+          <input
+            (input)="onUserInput($event, false)"
+            [(ngModel)]="endCity"
+            autoComplete="on"
+            list="endCity"
+            name="endCity"
+          />
         </div>
         <button type="submit">Calculer</button>
       </form>
       <div *ngIf="resultat" class="">
-        <hr>
+        <hr/>
         <p>Temps de Trajet : {{ resultat }}</p>
       </div>
     </div>
   </div>
   <div>
-    <div
-      class="secondGrid"
-    >
+    <div class="secondGrid">
+      <button (click)="checkPrice()" type="submit">
+        Savoir le cout du trajet ?
+      </button>
+      <div *ngIf="price" class="">
+        <hr/>
+        <p>le cout du trajet est : {{ price }} euro</p>
+      </div>
     </div>
   </div>
 </div>
 
-<div id="map" style="height: 900px;"></div>
-
-
+<div id="map" style="height: 900px"></div>

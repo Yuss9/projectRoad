@@ -1,13 +1,13 @@
 import {Component, OnInit} from '@angular/core';
-import {CalculSoapService} from "../../service/calcul-soap.service";
-import {GraphQLRequestService} from "../../service/graph-qlrequest.service";
-import {BorneService} from "../../service/borne.service";
+import {CalculSoapService} from '../../service/calcul-soap.service';
+import {GraphQLRequestService} from '../../service/graph-qlrequest.service';
+import {BorneService} from '../../service/borne.service';
 import * as L from 'leaflet';
 import 'leaflet';
 import 'leaflet-routing-machine';
 import 'leaflet-geometryutil';
-import {tap} from "rxjs/operators";
-import {Observable, zip} from "rxjs";
+import {tap} from 'rxjs/operators';
+import {Observable, zip} from 'rxjs';
 
 const iconRetinaUrl = 'assets/marker-icon-2x.png';
 const iconUrl = 'assets/marker-icon.png';
@@ -20,7 +20,7 @@ const iconDefault = L.icon({
   iconAnchor: [12, 41],
   popupAnchor: [1, -34],
   tooltipAnchor: [16, -28],
-  shadowSize: [41, 41]
+  shadowSize: [41, 41],
 });
 L.Marker.prototype.options.icon = iconDefault;
 
@@ -40,18 +40,26 @@ export class AccueilComponent implements OnInit {
   endCity!: string; // ville d'arrivée
 
   resultat!: number; // resultat du calcul
-
+  price!: string; // prix du trajet
   coordinates: any[] = [];
   // MAP
   map: any; // map
+
+  distance!: number; // distance du trajet
+
   greenIcon = L.icon({
     iconUrl: 'assets/image/icons8-electric-power-64.png',
     iconSize: [20, 20], // size of the icon
     iconAnchor: [19, 19], // point of the icon which will correspond to marker's location
-    popupAnchor: [-3, -76] // point from which the popup should open relative to the iconAnchor
+    popupAnchor: [-3, -76], // point from which the popup should open relative to the iconAnchor
   });
 
-  constructor(private calculSoapService: CalculSoapService, private vehiculeService: GraphQLRequestService, private borneService: BorneService, private voitureService: GraphQLRequestService) {
+  constructor(
+    private calculSoapService: CalculSoapService,
+    private vehiculeService: GraphQLRequestService,
+    private borneService: BorneService,
+    private voitureService: GraphQLRequestService
+  ) {
   }
 
   ngOnInit() {
@@ -68,12 +76,16 @@ export class AccueilComponent implements OnInit {
     this.brands = [];
     this.carList = [];
 
-    this.vehiculeService.getCarInformaitonWithName(event.target.value).subscribe((data: any) => {
-      this.carList = data;
-      this.carList.forEach((car: any) => {
-        this.brands.push(car.model + ' ' + car.make + ' autonomie ' + car.autonomy + ' km');
+    this.vehiculeService
+      .getCarInformaitonWithName(event.target.value)
+      .subscribe((data: any) => {
+        this.carList = data;
+        this.carList.forEach((car: any) => {
+          this.brands.push(
+            car.model + ' ' + car.make + ' autonomie ' + car.autonomy + ' km'
+          );
+        });
       });
-    });
   }
 
   // fonction qui permet de récupérer les informations  des lieux de départ et d'arrivée
@@ -90,12 +102,15 @@ export class AccueilComponent implements OnInit {
     // }
   }
 
-  onSubmit(form: { valid: any; }) {
+  onSubmit(form: { valid: any }) {
     if (form.valid) {
       // search in carList the carBrand id
       let carId = '';
       this.carList.forEach((car: any) => {
-        if (car.model + ' ' + car.make + ' autonomie ' + car.autonomy + ' km' === this.carBrand) {
+        if (
+          car.model + ' ' + car.make + ' autonomie ' + car.autonomy + ' km' ===
+          this.carBrand
+        ) {
           carId = car.id;
         }
       });
@@ -103,37 +118,46 @@ export class AccueilComponent implements OnInit {
       zip(
         this.borneService.getGeoCoding(this.startCity),
         this.borneService.getGeoCoding(this.endCity),
-        this.vehiculeService.getCarInformationWithID(carId),
-      ).pipe(
-        tap(value => {
-          const start = value[0];
-          const dest = value[1];
-          const currentCar = value[2];
+        this.vehiculeService.getCarInformationWithID(carId)
+      )
+        .pipe(
+          tap((value) => {
+            const start = value[0];
+            const dest = value[1];
+            const currentCar = value[2];
 
+            const waypoint1 = new L.LatLng(start.lat, start.lon);
+            const waypoint2 = new L.LatLng(dest.lat, dest.lon);
 
-          const waypoint1 = new L.LatLng(start.lat, start.lon);
-          const waypoint2 = new L.LatLng(dest.lat, dest.lon);
+            this.calculSoapService
+              .getDistanceV2(
+                start.lat,
+                start.lon,
+                dest.lat,
+                dest.lon,
+                60,
+                30,
+                currentCar.autonomy
+              )
+              .subscribe((data: any) => {
+                this.resultat = data;
+              });
 
-          this.calculSoapService.getDistanceV2(start.lat, start.lon, dest.lat, dest.lon, 60, 30, currentCar.autonomy).subscribe((data: any) => {
-            this.resultat = data;
-          });
-
-          this.firstTraceRoute([waypoint1, waypoint2], currentCar.autonomy);
-        })
-      ).subscribe();
-
+            this.firstTraceRoute([waypoint1, waypoint2], currentCar.autonomy);
+          })
+        )
+        .subscribe();
     } else {
       console.log('Formulaire invalide');
     }
-  };
+  }
 
   calculIndexArray(distanceKm: number, autonomy: number, lengthCoords: number) {
     if (autonomy < distanceKm) {
       const nbReloads = distanceKm / autonomy;
       let index = (autonomy * lengthCoords) / distanceKm;
       index = index - 400;
-      if (index < 0)
-        index = 0;
+      if (index < 0) index = 0;
       index = Math.floor(index);
 
       // Tableau index
@@ -147,15 +171,22 @@ export class AccueilComponent implements OnInit {
   }
 
   splitInput(input: string) {
-    let codePostal = input.split(" ")[2];
-    let country = input.split(" ")[1];
-    let city = input.split(" ")[0];
+    let codePostal = input.split(' ')[2];
+    let country = input.split(' ')[1];
+    let city = input.split(' ')[0];
     return [city, country, codePostal];
+  }
+
+  checkPrice() {
+    this.borneService.getPrice(this.distance).subscribe((data) => {
+      console.log("Mon prix : " + this.price);
+      this.price = data;
+    });
   }
 
   private firstTraceRoute(waypoints: L.LatLng[], autonomy: number) {
     const routing = L.Routing.control({
-      waypoints: waypoints
+      waypoints: waypoints,
     }).addTo(this.map);
 
     routing.on('routesfound', (e) => {
@@ -174,27 +205,33 @@ export class AccueilComponent implements OnInit {
         index.forEach((p: number) => {
           if (coords[p]) {
             // we add all the query in an array to send them at the same time
-            observables.push(this.borneService.getBorne(coords[p].lat, coords[p].lng, 100000));
+            observables.push(
+              this.borneService.getBorne(coords[p].lat, coords[p].lng, 100000)
+            );
           }
         });
 
         // send all the query
-        zip(...observables).pipe(
-          tap(value => {
-            // we create a new route form start to dest passing through charging point
-            const newWaypoints: any[] = [];
-            newWaypoints.push(waypoints[0]);
+        zip(...observables)
+          .pipe(
+            tap((value) => {
+              // we create a new route form start to dest passing through charging point
+              const newWaypoints: any[] = [];
+              newWaypoints.push(waypoints[0]);
 
-            value.forEach(v => {
-              newWaypoints.push(new L.LatLng(v.fields.ylatitude, v.fields.xlongitude))
-            });
+              value.forEach((v) => {
+                newWaypoints.push(
+                  new L.LatLng(v.fields.ylatitude, v.fields.xlongitude)
+                );
+              });
 
-            newWaypoints.push(waypoints[1]);
+              newWaypoints.push(waypoints[1]);
 
-            // trace new route and delete old route
-            this.secondTraceRoute(newWaypoints, routing);
-          })
-        ).subscribe();
+              // trace new route and delete old route
+              this.secondTraceRoute(newWaypoints, routing);
+            })
+          )
+          .subscribe();
       }
     });
   }
@@ -202,7 +239,7 @@ export class AccueilComponent implements OnInit {
   private secondTraceRoute(waypoints: L.LatLng[], routeToRemove: any) {
     // trace new route
     const routing = L.Routing.control({
-      waypoints: waypoints
+      waypoints: waypoints,
     }).addTo(this.map);
 
     // delete old route
@@ -210,9 +247,8 @@ export class AccueilComponent implements OnInit {
 
     routing.on('routesfound', (e) => {
       const distanceKm = e.routes[0].summary.totalDistance / 1000;
-
       console.log('distanceKm : ' + distanceKm);
-    })
+      this.distance = distanceKm;
+    });
   }
 }
-
