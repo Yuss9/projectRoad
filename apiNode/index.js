@@ -1,15 +1,16 @@
 const express = require("express");
 const app = express();
+// import express from "express";
+const cors = require("cors");
 
-// Permet de parser les requêtes JSON
+//var app = express();
+
+app.use(cors());
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
-app.use(function (req, res, next) {
-  res.setHeader("Access-Control-Allow-Origin", "*");
-  res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE");
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
-  res.setHeader("Access-Control-Allow-Credentials", true);
-  next();
+app.get("/", (req, res) => {
+  res.json({ message: "Hello world" });
 });
 
 // Route pour le calcul du prix de l'électricité

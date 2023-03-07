@@ -47,6 +47,9 @@ export class AccueilComponent implements OnInit {
 
   distance!: number; // distance du trajet
 
+
+  routing: any; // routing
+
   greenIcon = L.icon({
     iconUrl: 'assets/image/icons8-electric-power-64.png',
     iconSize: [20, 20], // size of the icon
@@ -115,6 +118,10 @@ export class AccueilComponent implements OnInit {
         }
       });
 
+      if (this.routing) {
+        this.map.removeControl(this.routing);
+      }
+
       zip(
         this.borneService.getGeoCoding(this.startCity),
         this.borneService.getGeoCoding(this.endCity),
@@ -179,17 +186,23 @@ export class AccueilComponent implements OnInit {
 
   checkPrice() {
     this.borneService.getPrice(this.distance).subscribe((data) => {
+
+      this.price = parseFloat(data.prix.toFixed(2)).toString();
       console.log("Mon prix : " + this.price);
-      this.price = data;
     });
   }
 
   private firstTraceRoute(waypoints: L.LatLng[], autonomy: number) {
-    const routing = L.Routing.control({
+    this.routing = L.Routing.control({
       waypoints: waypoints,
     }).addTo(this.map);
 
-    routing.on('routesfound', (e) => {
+    this.routing.on('routesfound', (e: {
+      routes: {
+        summary: any;
+        coordinates: any;
+      }[];
+    }) => {
       const distanceKm = e.routes[0].summary.totalDistance / 1000;
       const coords = e.routes[0].coordinates;
       const autonomyKm = autonomy;
@@ -228,7 +241,7 @@ export class AccueilComponent implements OnInit {
               newWaypoints.push(waypoints[1]);
 
               // trace new route and delete old route
-              this.secondTraceRoute(newWaypoints, routing);
+              this.secondTraceRoute(newWaypoints, this.routing);
             })
           )
           .subscribe();
@@ -238,14 +251,14 @@ export class AccueilComponent implements OnInit {
 
   private secondTraceRoute(waypoints: L.LatLng[], routeToRemove: any) {
     // trace new route
-    const routing = L.Routing.control({
+    this.routing = L.Routing.control({
       waypoints: waypoints,
     }).addTo(this.map);
 
     // delete old route
     this.map.removeControl(routeToRemove);
 
-    routing.on('routesfound', (e) => {
+    this.routing.on('routesfound', (e: { routes: { summary: { totalDistance: number; }; }[]; }) => {
       const distanceKm = e.routes[0].summary.totalDistance / 1000;
       console.log('distanceKm : ' + distanceKm);
       this.distance = distanceKm;
