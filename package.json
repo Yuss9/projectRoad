@@ -34,6 +34,7 @@
     "leaflet-routing-machine": "^3.2.12",
     "leaflet-routing-machine-here": "^2.1.0",
     "ngx-soap": "^0.7.0",
+    "package-name": "^0.1.0",
     "react": "^18.2.0",
     "rxjs": "~7.5.0",
     "tslib": "^2.3.0",
