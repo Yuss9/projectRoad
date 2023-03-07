@@ -61,7 +61,7 @@ export class BorneService {
 
   getPrice(distance: number): Observable<any> {
     // send request to get price to this url http://localhost:3000/prix-electricite with in header the distance
-    return this.http.get('http://localhost:3000/prix-electricite', {headers: {kilometres: distance?.toString()}}).pipe(
+    return this.http.get('https://api-green-charge.vercel.app/prix-electricite', {headers: {kilometres: distance?.toString()}}).pipe(
       map((value) => {
           return value;
         }
