@@ -78,7 +78,7 @@ export class GraphQLRequestService {
     return this.apollo.watchQuery({
       query: gql`
        query vehicleListAll {
-          vehicleList(size: 10, search: "${carModel}") {
+          vehicleList(size: 2, search: "${carModel}") {
             id
             naming {
               model
@@ -118,7 +118,7 @@ export class GraphQLRequestService {
         {
            vehicleList(
             page: 0,
-            size: 10
+            size: 2
           ) {
             id
             naming {
