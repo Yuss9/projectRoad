@@ -150,6 +150,7 @@ export class AccueilComponent implements OnInit {
                 this.resultat = data;
               });
 
+
             this.firstTraceRoute([waypoint1, waypoint2], currentCar.autonomy);
           })
         )
@@ -262,6 +263,12 @@ export class AccueilComponent implements OnInit {
       const distanceKm = e.routes[0].summary.totalDistance / 1000;
       console.log('distanceKm : ' + distanceKm);
       this.distance = distanceKm;
+      
+      this.borneService.getPrice(this.distance).subscribe((data) => {
+        this.price = parseFloat(data.prix.toFixed(2)).toString();
+        console.log("Mon prix Bis est : " + this.price);
+      });
+
     });
   }
 }
