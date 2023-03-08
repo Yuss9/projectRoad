@@ -94,15 +94,15 @@ export class AccueilComponent implements OnInit {
   // fonction qui permet de récupérer les informations  des lieux de départ et d'arrivée
   onUserInput(event: any, value: boolean) {
     //permet d'afficher les villes chercher
-    // if (value) {
-    //   this.borneService.getCities(event.target.value).subscribe((data: any) => {
-    //     this.cities = data;
-    //   });
-    // } else {
-    //   this.borneService.getCities(event.target.value).subscribe((data: any) => {
-    //     this.citiesArrived = data;
-    //   });
-    // }
+    if (value) {
+      this.borneService.getCities(event.target.value).subscribe((data: any) => {
+        this.cities = data;
+      });
+    } else {
+      this.borneService.getCities(event.target.value).subscribe((data: any) => {
+        this.citiesArrived = data;
+      });
+    }
   }
 
   onSubmit(form: { valid: any }) {
@@ -263,7 +263,7 @@ export class AccueilComponent implements OnInit {
       const distanceKm = e.routes[0].summary.totalDistance / 1000;
       console.log('distanceKm : ' + distanceKm);
       this.distance = distanceKm;
-      
+
       this.borneService.getPrice(this.distance).subscribe((data) => {
         this.price = parseFloat(data.prix.toFixed(2)).toString();
         console.log("Mon prix Bis est : " + this.price);
