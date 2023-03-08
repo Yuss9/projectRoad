@@ -1,26 +1,59 @@
-.firstGrid {
-  margin-left: 1em;
-  margin-right: 1em;
-  margin-top: 1em;
-}
-
-.secondGrid {
- margin-left: 1em;
- margin-right: 1em;
- margin-top: 1em;
+.wrapper {
+  display: grid;
+  grid-template-columns: 1fr 2fr; /* La première grid prend 1/4 de la page, la deuxième prend 3/4 */
+  gap: 1rem; /* Espace entre les deux grids */
 }
 
 #titleContainer {
-  margin-top: 2em;
   display: flex;
-  flex-direction: row;
   justify-content: center;
+  align-items: center;
+  height: 20vh; /* ajustez la hauteur selon vos besoins */
 }
 
-#map {
-  width: calc(100% - 20px);
-  height: calc(100% - 20px);
-  border: #555555 2px solid;
-  margin: 0 auto;
-  margin-bottom: 100px;
+h1 {
+  font-size: 3rem; /* ajustez la taille de police selon vos besoins */
 }
+
+.animate__animated {
+  animation-duration: 3s;
+  animation-fill-mode: both;
+}
+
+.animate__fadeIn {
+  animation-name: fadeIn;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+
+@media only screen and (max-width: 768px) {
+  /* Pour les écrans de taille <= 768px */
+  .wrapper {
+    display: block; /* La grille est supprimée */
+  }
+
+  .firstGrid, .secondGrid {
+    width: 100%; /* Les deux grilles occupent 100% de la largeur de la page */
+  }
+}
+
+.firstGrid {
+  background-color: #fff;
+  padding: 1rem;
+}
+
+.secondGrid {
+  background-color: #f7f7f7;
+  padding: 1rem;
+  margin-right: 2em;
+}
+
+
