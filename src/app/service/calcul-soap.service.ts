@@ -11,7 +11,8 @@ export class CalculSoapService {
   }
 
   getDistanceV2(lat1: number, lon1: number, lat2: number, lon2: number, vitesse_km_h: number, temps_recharge_min: number, autonomie_km: number) {
-    const url = 'http://localhost:8000';
+    const url = 'https://soap-python.vercel.app';
+    console.log("J'ai envoyer sur soapp");
     const options = {responseType: 'xml' as 'json'};
 
     const SoapData = `
