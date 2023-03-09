@@ -32,6 +32,10 @@ h1 {
   }
 }
 
+body {
+  width: 100%;
+}
+
 .wrapper {
   display: grid;
   grid-template-columns: 1fr 2fr; /* La première grid prend 1/4 de la page, la deuxième prend 3/4 */
@@ -88,18 +92,19 @@ h1 {
   }
 
   .wrapper {
-    width: 100%;
     display: block; /* La grille est supprimée */
   }
 
   .firstGrid, .secondGrid {
-    width: 100%; /* Les deux grilles occupent 100% de la largeur de la page */
-    margin-bottom: 100px;
+    width: 90%; /* Les deux grilles occupent 100% de la largeur de la page */
+    margin-left: auto;
+    margin-right: auto;
   }
 
-  //.secondGrid {
-  //  margin-left: 1.5em;
-  //}
+  .secondGrid {
+    margin-top: 100px;
+    margin-left: 2em;
+  }
 }
 
 .firstGrid {

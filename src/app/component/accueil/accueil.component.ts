@@ -109,12 +109,15 @@ export class AccueilComponent implements OnInit {
     if (form.valid) {
       // search in carList the carBrand id
       let carId = '';
+      console.log("la voiture est : ", this.carBrand)
+      console.log("la liste des voitures est : ", this.carList)
       this.carList.forEach((car: any) => {
         if (
           car.model + ' ' + car.make + ' autonomie ' + car.autonomy + ' km' ===
           this.carBrand
         ) {
           carId = car.id;
+          console.log("l'id de la voiture est : ", carId)
         }
       });
 

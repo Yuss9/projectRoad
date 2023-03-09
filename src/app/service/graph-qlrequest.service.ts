@@ -23,6 +23,7 @@ export class GraphQLRequestService {
 
 
   getCarInformationWithID(carID: string): Observable<any> {
+    console.log("l'id du vehicule recu est  : ", carID)
     return this.apollo.watchQuery({
       query: gql`
         query vehicle {
