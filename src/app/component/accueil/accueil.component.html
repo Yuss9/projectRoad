@@ -4,11 +4,11 @@
 
 
 <div id="titleContainer">
-  <h1 class="animate__animated animate__fadeIn">GreenChargeFinder</h1>
+  <p class="animate__animated animate__fadeIn" id="title">GreenChargeFinder</p>
 </div>
 <div class="wrapper animate__animated animate__fadeIn">
   <div>
-    <div class="firstGrid">
+    <div class="firstGrid" data-theme="light">
       <form #f="ngForm" (ngSubmit)="onSubmit(f)">
         <div>
           <label for="carBrand">Marque de la voiture :</label>

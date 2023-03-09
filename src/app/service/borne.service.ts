@@ -36,6 +36,11 @@ export class BorneService {
         //   cities.push(value[i].display_name);
         // }
         for (var i = 0; i < 10; i++) {
+
+          // can read property 'display_name' of undefined
+
+          if (value[i] == undefined)
+            break;
           cities.push(value[i].display_name);
         }
         return cities;

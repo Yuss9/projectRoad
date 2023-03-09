@@ -24,8 +24,8 @@ import {HttpLink} from "apollo-angular/http";
             link: httpLink.create({
               uri: 'https://api.chargetrip.io/graphql',
               headers: new HttpHeaders({
-                'x-client-id': '63f936b48f03f15cd38e9a36',
-                'x-app-id': '63f936b48f03f15cd38e9a38'
+                'x-client-id': '640a4843e6ec7227c2985d01',
+                'x-app-id': '640a4843e6ec7227c2985d03'
               }),
               method: 'POST'
             }),

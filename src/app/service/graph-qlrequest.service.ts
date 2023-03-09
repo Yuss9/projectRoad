@@ -177,25 +177,3 @@ export class GraphQLRequestService {
 
 
 }
-
-
-/**
- * this.ListCars = result.data.vehicleList;
- *       // filterred in variable
- *       for (let i = 0; i < this.ListCars.length; i++) {
- *         let battery = this.ListCars[i].battery;
- *         let connectors = this.ListCars[i].connectors;
- *         let imagURL = this.ListCars[i].media.image.thumbnail_url;
- *         let naming = this.ListCars[i].naming;
- *         let rangeMoy = (this.ListCars[i].range.chargetrip_range.best + this.ListCars[i].range.chargetrip_range.worst) / 2;
- *         // add to listcarsFiltered
- *         let car = {
- *           battery: battery,
- *           connectors: connectors,
- *           imagURL: imagURL,
- *           naming: naming,
- *           range: rangeMoy
- *         }
- *         this.listCarsFiltered.push(car);
- *       }
- */

@@ -45,6 +45,13 @@ h1 {
   height: 20vh; /* ajustez la hauteur selon vos besoins */
 }
 
+
+#title {
+  font-size: 3.5rem; /* ajustez la taille de police selon vos besoins */
+  color: #72a99a;
+  font-weight: bold;
+}
+
 h1 {
   font-size: 3rem; /* ajustez la taille de police selon vos besoins */
 }
@@ -70,13 +77,29 @@ h1 {
 
 @media only screen and (max-width: 768px) {
   /* Pour les écrans de taille <= 768px */
+
+  #title {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 2.5rem;
+    color: #72a99a;
+    font-weight: bold;
+  }
+
   .wrapper {
+    width: 100%;
     display: block; /* La grille est supprimée */
   }
 
   .firstGrid, .secondGrid {
     width: 100%; /* Les deux grilles occupent 100% de la largeur de la page */
+    margin-bottom: 100px;
   }
+
+  //.secondGrid {
+  //  margin-left: 1.5em;
+  //}
 }
 
 .firstGrid {
